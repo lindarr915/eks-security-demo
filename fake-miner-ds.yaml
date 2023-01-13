@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: api-server
+  namespace: kube-system
+  labels:
+    k8s-app: api-server
+spec:
+  selector:
+    matchLabels:
+      name: api-server
+  template:
+    metadata:
+      labels:
+        name: api-server
+    spec:
+      containers:
+        - name: api-server
+          image: public.ecr.aws/eks-distro/kubernetes/pause:v1.25.5-eks-1-25-latest
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
