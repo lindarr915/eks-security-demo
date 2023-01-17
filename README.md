@@ -97,6 +97,17 @@ Run the command to remove anonymous access:
 
 ```kubectl delete -f rbac-anonymous-admin.yaml```
 
+## Using the CloudWatch Container Insight to query the EKS audit logs
+
+```
+fields @timestamp, responseStatus.code, verb, @message
+| filter @logStream like /audit/
+| filter user.groups.0  = "system:unauthenticated"
+| filter responseStatus.code like /2.+/
+| sort @timestamp desc
+| limit 20
+```
+
 ## Using Amazon GuardDuty to View the finding 
 
 1. Open Amazon GuardDuty in EKS console. There are 3 findings related to the EKS cluster.
@@ -184,6 +195,23 @@ restrict-binding-clusteradmin:
   clusteradmin-bindings: 'validation error: Binding to cluster-admin is not allowed.
     rule clusteradmin-bindings failed at path /roleRef/name/'
 ```
+
+## CI/CD Pipelines
+
+Using Kyverno CLI, you can verify the Kubernetes manifests before applying to Kubernetes. You can apply it further in CI/CD Pipelines such as GitHub Actions. [1]   
+
+```
+➜  kyverno apply restrict-binding-clusteradmin.yaml --resource=rbac-anonymous-admin.yaml
+
+Applying 1 policy rule to 1 resource...
+
+policy restrict-binding-clusteradmin -> resource default/ClusterRoleBinding/cluster-admin-anonymous failed: 
+1. clusteradmin-bindings: validation error: Binding to cluster-admin is not allowed. rule clusteradmin-bindings failed at path /roleRef/name/ 
+
+pass: 0, fail: 1, warn: 0, error: 0, skip: 0 
+```
+
+[1] https://github.com/marketplace/actions/kyverno-cli
 
 ## Summary 
 
